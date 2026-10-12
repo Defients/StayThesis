@@ -61,6 +61,13 @@ the card; the decision shows the new classification and the Command Center raise
 "Ready to acquire" = stage `qualified` AND every approval request for the property has both partners `APPROVED`.
 Simulated — not secure authorization.
 
+Phase 2 tightening: readiness additionally requires live `canQualify` and a
+nonempty request list. Shared mode requires startup-budget and lease-commitment
+requests, plus credit-use when credit is funded; every request needs both
+approved slots. The server binds decisions to account membership. Financial,
+preference, compliance and evidence changes reset relevant shared decisions to
+pending. The default demo retains simulated identities and decisions.
+
 ## 4. Advisory investment score (0–100)
 
 `DEFAULT_WEIGHTS = { financialStrength: 30, guestExperience: 15, aesthetics: 10, location: 15, demandStability: 15, operationalSimplicity: 5, evidenceConfidence: 10 }`
@@ -98,6 +105,11 @@ Expected values for tests (hand-computed):
 
 React context + `useReducer`, in memory, resets on refresh. Static records (`markets`, `properties`, `partners`) are
 never copied into screens; screens read by id. Mutable state:
+
+The optional Phase 2 controller persists only shared mutable fields through
+server actions. `actingPartnerId`, `compare`, `lastViewedPropertyId`, `notice`
+and the shared-mode session marker are excluded. Static records and calculated
+evaluations remain in code/selector logic. See `phase-2-setup.md`.
 
 ```ts
 interface DemoState {

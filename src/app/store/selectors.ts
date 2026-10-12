@@ -18,7 +18,7 @@ import type {
 import { evaluateProperty, type PropertyEvaluation } from '@/domain/evaluate';
 import { marketById } from '@/data/demo/markets';
 import { propertyById } from '@/data/demo/properties';
-import { useStore } from './StoreContext';
+import { useStore, useWorkspace } from './StoreContext';
 import type { DemoState } from './state';
 
 /**
@@ -90,6 +90,11 @@ export function selectPropertyView(
     const approvals = state.approvals.filter((a) => a.propertyId === propertyId);
     const readyToAcquire =
       pipeline.stage === 'qualified' &&
+      evaluation.decision.canQualify &&
+      approvals.length > 0 &&
+      (state.workspaceMode !== 'shared' ||
+        (['startup-budget', 'lease-commitment', ...(evaluation.results.base.capital.creditFunded > 0 ? ['credit-use'] : [])]
+          .every(kind => approvals.some(a => a.kind === kind)))) &&
       approvals.every(
         (a) =>
           a.decisions['partner-a'] === 'APPROVED' &&
@@ -166,15 +171,21 @@ export function selectPropertyViews(state: DemoState): PropertyView[] {
 
 export function usePropertyView(propertyId: PropertyId | undefined | null) {
   const state = useStore();
+  const { mode, status } = useWorkspace();
   return useMemo(
-    () => (propertyId ? selectPropertyView(state, propertyId) : null),
-    [state, propertyId],
+    () => {
+      const view = propertyId ? selectPropertyView(state, propertyId) : null;
+      return view && mode === 'shared' && status !== 'synced' ? { ...view, readyToAcquire: false } : view;
+    },
+    [state, propertyId, mode, status],
   );
 }
 
 export function usePropertyViews(): PropertyView[] {
   const state = useStore();
-  return useMemo(() => selectPropertyViews(state), [state]);
+  const { mode, status } = useWorkspace();
+  return useMemo(() => selectPropertyViews(state).map(view =>
+    mode === 'shared' && status !== 'synced' ? { ...view, readyToAcquire: false } : view), [state, mode, status]);
 }
 
 export function usePortfolioSummary(): PortfolioSummary {

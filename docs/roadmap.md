@@ -1,26 +1,27 @@
 # Roadmap
 
-Everything below is **not implemented**. Phase 1 is a single-user, in-memory
-demo workspace.
+Phase 1 remains the default offline demo. Phase 2's shared pilot is now
+implemented locally; cloud provisioning and hosted validation remain pending.
+See [Phase 2 setup](phase-2-setup.md) for setup, checks and limitations.
 
 ## Phase 2 — shared records (smallest next step)
 
-Goal: two real partners editing the same pipeline. Options, not decisions —
-the constraint is staying on a $0 free-tier stack:
+Goal: two real partners editing the same pipeline. Supabase is the selected
+optional backend; no project or deployment has been created:
 
-- **Private shared records + auth** — e.g. Supabase (Postgres + Auth + RLS) or
-  Firebase free tier. `DemoState`/`Action` map naturally onto tables + an
-  append-only event log; the reducer becomes the client-side projection.
-- **Server-enforced dual approval** — the client already restricts
-  `DECIDE_APPROVAL` to the acting partner's slot; a DB rule/edge function
-  enforces it with real identity and blocks self-approval on
-  partner-requested items if desired.
-- **Real evidence capture** — `EvidenceRecord` already models source,
-  retrieval/effective dates, observation period, classification and audit;
-  wire real documents/URLs and municipal lookups into the same shape.
-- **Persistence of edits** — underwriting overrides, gate records, notes,
-  tasks and pipeline moves persist; activity log becomes shared.
-- Seams documented in `docs/architecture.md` were designed for this.
+- **Implemented locally:** password sign-in, owner-managed two-account
+  membership, RLS read isolation, server-only action commits, version conflicts,
+  safe retries, polling, shared mutable records and a separate audit event log.
+- **Implemented locally:** approvals bound to authenticated partner slots;
+  financial/compliance changes reset earlier decisions. Unknown gates still
+  block qualification, and the server recomputes financial gates.
+- **Implemented locally:** manual evidence capture with source metadata and
+  audit history. Capture never verifies a record or passes a gate.
+- **Pending:** new Supabase project, two real accounts, migration/function
+  deployment, hosted authorization/security checks, and a configured app build.
+- **Future:** real-property/market CRUD, document upload/storage, municipal
+  lookups, normalized tables, backup/restore and production account recovery.
+  Inventory and market metrics are still synthetic; no outreach is sent.
 
 ## Phase 3 — operations (post-acquisition)
 

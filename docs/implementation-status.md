@@ -56,8 +56,42 @@ drawer instead of shared centered Dialog; reducer refusals via `state.notice`.
 
 ## Open issues / known limitations
 
-- No persistence (by design — Phase 2 seam at the reducer).
+- No persistence in the default demo. Optional Phase 2 shared persistence is
+  implemented locally; cloud setup remains pending.
 - Outreach drafts are review-only; Send is disabled.
-- Partner identity is simulated; no auth.
+- Partner identity is simulated in the demo. Optional shared mode has Auth.
 - Market metrics are modeled demo values, not research.
 - Native HTML5 DnD is desktop-only; mobile/touch moves via the Move-to select.
+
+## Phase 2 — local shared pilot (October 11, 2026)
+
+Implemented optional Supabase Auth, two-account membership, private shared
+mutable records, server-side canonical action validation/reduction, atomic
+versioned commits, idempotent retries, polling/conflict recovery, account-bound
+approvals, approval invalidation after changed assumptions and manual evidence
+capture. The offline demo remains the default. No cloud project, deployment,
+messages, real-data import or financial transaction was created.
+
+Readiness was tightened to require current satisfied gates and nonempty
+approval requests. Shared mode additionally requires startup-budget, lease and
+funded-credit requests with both slots approved, and hides readiness while
+changes are unconfirmed. Shared initialization strips simulated consent and
+puts manual gates back into NEEDS_VERIFICATION.
+
+Local verification:
+
+- Typecheck, client build and Edge bundle build pass.
+- 145 unit/RTL/server/controller tests across 18 files pass.
+- 15 original browser tests and 3 shared-mode browser tests pass. Shared Auth
+  responses/repository are mocked; canonical handler/reducer and browser SDK
+  are exercised. Accessibility scans cover sign-in and evidence capture.
+- 27 SQL checks pass using the actual migration on PostgreSQL via PGlite,
+  including RLS, privilege denial, identity binding, membership revocation,
+  version conflicts, idempotency and browser audit protection.
+- Deno validates the generated Edge entry point; hosted deployment is pending.
+- Production dependency audit reports zero vulnerabilities.
+- Desktop source capture and desktop/mobile sign-in screenshots were reviewed.
+
+Setup, design limits, deliberate Phase 1 exceptions and remaining cloud checks
+are in `docs/phase-2-setup.md`. Real inventory CRUD, file uploads, municipal
+lookups, outreach delivery and production account recovery remain unimplemented.

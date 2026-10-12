@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
-import { StoreProvider } from './store/StoreContext';
+import { WorkspaceBoundary } from './shared/WorkspaceBoundary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -25,7 +25,7 @@ const CrmPage = lazy(() => import('@/features/crm/CrmPage'));
  */
 export default function App() {
   return (
-    <StoreProvider>
+    <WorkspaceBoundary>
       <HashRouter>
         <Routes>
           <Route element={<AppLayout />}>
@@ -43,6 +43,6 @@ export default function App() {
           </Route>
         </Routes>
       </HashRouter>
-    </StoreProvider>
+    </WorkspaceBoundary>
   );
 }

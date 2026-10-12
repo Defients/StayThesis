@@ -16,6 +16,7 @@ import {
   useActingPartner,
   useDispatch,
   useStore,
+  useWorkspace,
 } from '@/app/store/StoreContext';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -58,6 +59,7 @@ export function CrmDrawer({
 }) {
   const dispatch = useDispatch();
   const store = useStore();
+  const { mode } = useWorkspace();
   const { actingPartner } = useActingPartner();
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -497,7 +499,7 @@ export function CrmDrawer({
                 Request approval
               </Button>
               <p className="text-[10px] text-muted">
-                Simulated approval — not authenticated.
+                {mode === 'shared' ? 'Both authenticated partners must approve.' : 'Simulated approval — not authenticated.'}
               </p>
             </form>
           </section>

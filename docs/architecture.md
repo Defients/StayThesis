@@ -103,9 +103,38 @@ flooding).
    fixes go in the app, not the test (contrast token, nested-interactive
    refactors, dl structure, HashRouter-safe skip link).
 
-## Phase 2 extension seams
+## Phase 2 shared pilot
 
-These are seams in the existing code — not built functionality:
+The seams below now have an optional implementation. `app/shared/` contains
+build-time configuration, memory-only Auth, a serialized sync controller and
+the lazy-loaded Supabase browser adapter. `server/` validates untrusted actions,
+resolves membership identity, runs the canonical reducer and commits via a
+service-only RPC. `supabase/` holds the migration, function entry and owner-only
+provisioning template. `npm run build:server` bundles shared domain/store code
+for the Edge runtime; generated output is ignored by Git.
+
+Data flow in shared mode:
+
+```
+partner → action queue → authenticated Edge handler → canonical reducer
+  → version-checked SQL transaction (snapshot + audit event)
+  → authoritative snapshot → local projection → selectors → React
+```
+
+RLS restricts reads to members. Clients have no table write access or commit
+RPC permission. Snapshot state excludes identity, comparison, navigation,
+notices and derived results. Static inventory is still fictional and stays in
+the bundle. Unknown compliance never becomes approved on initialization.
+
+The default demo has no backend/network/persistence. Shared mode is explicitly
+configured with public build-time values; no server credential reaches the SPA.
+No cloud project has been provisioned or deployed. Setup, recovery behavior,
+testing and limits are documented in `phase-2-setup.md`.
+
+## Original Phase 2 extension seams
+
+These describe the original Phase 1 hooks; persistence/auth/approval/source
+capture now use them, while outreach delivery remains unimplemented:
 
 - **Persistence/sync** — the reducer is the single mutation point: a sync
   adapter can subscribe to `Action`s and reconcile server state; `DemoState`

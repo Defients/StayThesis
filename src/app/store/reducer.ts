@@ -4,6 +4,7 @@ import type {
   ApprovalDecision,
   ApprovalRequest,
   EvidenceRecord,
+  EvidenceCapture,
   FinancingAssumptions,
   GateCategory,
   GateStatus,
@@ -86,6 +87,7 @@ export type Action =
       note: string;
     }
   | { type: 'TOGGLE_CHECKLIST_ITEM'; id: string }
+  | { type: 'ADD_EVIDENCE'; evidence: EvidenceCapture }
   | {
       type: 'UPDATE_EVIDENCE';
       id: string;
@@ -464,6 +466,27 @@ export function reducer(state: DemoState, action: Action): DemoState {
         ),
       };
       return log(next, 'system', `Checklist item ${item.done ? 'reopened' : 'completed'}`, item.propertyId);
+    }
+
+    case 'ADD_EVIDENCE': {
+      const input = action.evidence;
+      if (!propertyById(input.entityId) || !input.metric.trim() || !input.sourceName.trim())
+        return refuse(state, 'Evidence needs a property, metric, and source name');
+      if (input.sourceUrl && !/^https?:\/\//i.test(input.sourceUrl))
+        return refuse(state, 'Source URL must use http or https');
+      const record: EvidenceRecord = {
+        ...input,
+        metric: input.metric.trim(),
+        sourceName: input.sourceName.trim(),
+        id: createId('evidence'),
+        classification: 'UNVERIFIED',
+        reviewStatus: 'UNREVIEWED',
+        reviewer: null,
+        historyState: 'CURRENT',
+        audit: [{ at: nowIso(), actor: state.actingPartnerId, action: 'Captured unverified source' }],
+      };
+      return log({ ...state, evidence: [...state.evidence, record] },
+        'evidence-change', `Captured evidence: ${record.metric}`, record.entityId);
     }
 
     case 'UPDATE_EVIDENCE': {

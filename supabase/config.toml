@@ -1,0 +1,7 @@
+project_id = "staythesis"
+
+[functions.workspace]
+# The handler validates the bearer token with Auth.getUser, allowing modern
+# publishable keys. The gateway JWT check is not used as authorization.
+verify_jwt = false
+entrypoint = "./functions/workspace/index.js"

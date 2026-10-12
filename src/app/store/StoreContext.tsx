@@ -14,14 +14,35 @@ import { reducer, type Action } from './reducer';
 interface StoreContextValue {
   state: DemoState;
   dispatch: Dispatch<Action>;
+  workspace: WorkspaceControls;
 }
+
+export interface WorkspaceControls {
+  mode: 'demo' | 'shared';
+  status: 'synced' | 'saving' | 'refreshing' | 'error';
+  message?: string;
+  refresh?: () => void;
+  retry?: () => void;
+  signOut?: () => void;
+}
+
+const demoWorkspace: WorkspaceControls = { mode: 'demo', status: 'synced' };
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
-  const value = useMemo(() => ({ state, dispatch }), [state]);
+  const value = useMemo(() => ({ state, dispatch, workspace: demoWorkspace }), [state]);
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+export function ConnectedStoreProvider({ state, dispatch, workspace, children }:
+  StoreContextValue & { children: ReactNode }) {
+  return <StoreContext.Provider value={{ state, dispatch, workspace }}>{children}</StoreContext.Provider>;
+}
+
+export function useWorkspace(): WorkspaceControls {
+  return useStoreContext().workspace;
 }
 
 function useStoreContext(): StoreContextValue {

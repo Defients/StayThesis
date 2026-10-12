@@ -8,7 +8,7 @@ import type {
   PartnerId,
 } from '@/domain/types';
 import { STAGES } from '@/domain/crm/stages';
-import { useDispatch, useStore } from '@/app/store/StoreContext';
+import { useDispatch, useStore, useWorkspace } from '@/app/store/StoreContext';
 import { usePropertyViews } from '@/app/store/selectors';
 import { MARKETS } from '@/data/demo/markets';
 import { propertyById } from '@/data/demo/properties';
@@ -34,6 +34,7 @@ const DECISION_TONE: Record<ApprovalDecision, 'positive' | 'critical' | 'warning
 export default function CrmPage() {
   const views = usePropertyViews();
   const store = useStore();
+  const { mode } = useWorkspace();
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -257,7 +258,7 @@ export default function CrmPage() {
         actions={
           <span className="text-[10px] text-muted">
             Material financial commitments require approval from both partners.
-            Simulated — not authenticated.
+            {mode === 'shared' ? 'Decisions are tied to signed-in accounts.' : 'Simulated — not authenticated.'}
           </span>
         }
       >

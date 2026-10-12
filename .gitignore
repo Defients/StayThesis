@@ -1,11 +1,13 @@
 node_modules
 dist
+dist-shared
 coverage
 *.local
 .DS_Store
 
 # test / playwright artifacts
 test-results
+test-results-shared
 playwright-report
 playwright/.cache
 artifacts/
@@ -14,3 +16,10 @@ artifacts/
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+.env
+.env.*
+!.env.example
+supabase/.temp/
+supabase/.branches/
+supabase/functions/workspace/index.js

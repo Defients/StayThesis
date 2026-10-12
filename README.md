@@ -10,17 +10,21 @@ all against a fully synthetic demo dataset.
 
 ## ⚠ DEMO DATA
 
-Every market metric, property, tenant, gate status, evidence record, and
+Every seeded market metric, property, tenant, gate status, evidence record, and
 dollar figure in this app is **synthetic demo data** — modeled to be
 plausible, not researched. Nothing is verified against real municipalities,
 landlords, HOAs, or insurers. Compliance unknowns are shown as unresolved,
 never as approvals. The two "partners" (Joe, Deffy) are
-simulated personas, not authenticated users.
+simulated personas in the offline demo. Optional shared mode binds these
+partner slots to two real accounts. Manually captured sources start unverified.
 
 ## Phase 1 scope
 
-Static SPA, in-memory state, no backend, no persistence, no network calls,
-no real outreach. See `docs/roadmap.md` for what Phase 2+ would add.
+The default SPA retains in-memory state, no persistence, no network calls and
+no real outreach. An optional **Phase 2 shared pilot** adds Supabase sign-in,
+private persisted edits, partner-bound approvals, conflict handling and source
+capture. It is prepared locally and has not been deployed. Inventory and market
+figures remain synthetic in both modes. See [Phase 2 setup](docs/phase-2-setup.md).
 
 ## Requirements
 
@@ -37,6 +41,9 @@ npm test                       # vitest unit/RTL suite
 npx playwright install chromium   # one-time browser install for E2E
 npm run test:e2e               # playwright (builds + previews dist on :4173)
 npm run build                  # production build → dist/
+npm run build:server           # bundle the optional Supabase Edge function
+npm run test:database          # local PostgreSQL permissions/concurrency checks
+npm run test:e2e:shared        # two-account browser tests with a mocked backend
 npm run preview                # serve dist/
 npm run screenshots            # desktop+mobile PNGs → artifacts/screenshots/
                                # (requires the dev server running on :5173)
@@ -46,8 +53,10 @@ npm run screenshots            # desktop+mobile PNGs → artifacts/screenshots/
 
 The build uses `HashRouter` and `base: './'` — upload the contents of `dist/`
 to any static file host (no server-side routing rules needed). No deployment
-has been performed or configured; the app runs entirely client-side with no
-runtime environment variables or secrets.
+has been performed. The offline build has no runtime environment variables or
+secrets. Shared mode uses three public build-time settings from `.env.local`;
+server credentials remain in the Edge runtime. Configuration is optional and
+validated before producing a bundle.
 
 ## Project structure
 
@@ -95,19 +104,23 @@ docs/               domain rules, financial model, architecture, data model,
 ## Verification (final runs)
 
 - `npm run typecheck` — clean
-- `npm test` — **118/118 tests** across **14 files**
+- `npm test` — **145/145 tests** across **18 files**
 - `npm run test:e2e` — **15/15** Playwright (chromium): acquisition flow,
   negative paths, mobile, axe accessibility scans, keyboard navigation
-- `npm run build` — pass (~650 ms; lazy route chunks)
+- `npm run test:e2e:shared` — **3/3**: two-account sync, approvals, source
+  capture, memory-only sessions, mobile and shared-mode axe scans (mock backend)
+- `npm run test:database` — **27 checks** against PostgreSQL via PGlite
+- `npm run build` and `npm run build:server` — pass; optional auth is lazy-loaded
 - `npm audit --omit=dev` — **0 vulnerabilities**
 - `npm run screenshots` — 26 PNGs in `artifacts/screenshots/`
 
 ## Known limitations
 
-- No persistence — state resets on reload (Reset demo restores the seed);
-  Phase 2 seam documented in `docs/architecture.md`.
+- Offline demo resets on reload. Shared records persist on the optional
+  backend; sessions are memory-only and require sign-in again after reload.
 - Outreach drafts are preview-only; **no messages are sent in Phase 1**.
-- Partner identity is simulated — approvals are advisory, not authenticated.
+- Offline identity is simulated. Shared approvals are account-bound; no lease,
+  payment or credit transaction is executed in either mode.
 - Market metrics are modeled values, not real research.
 - Accepted spec deviations (documented in `docs/implementation-status.md`):
   revenue÷rent bound widened to 4.5, ST-105 below the $1,500/mo target,
@@ -119,7 +132,8 @@ docs/               domain rules, financial model, architecture, data model,
 - `docs/financial-model.md` — authoritative financial spec
 - `docs/architecture.md` — stack, module boundaries, data flow, Phase 2 seams
 - `docs/data-model.md` — entities + demo dataset + realism bounds
-- `docs/roadmap.md` — Phase 2/3 options (not implemented)
+- `docs/roadmap.md` — implemented Phase 2 pilot and remaining Phase 2/3 work
+- `docs/phase-2-setup.md` — optional shared backend setup and validation
 - `docs/acceptance.md` — Phase 1 acceptance gate with evidence
 - `docs/implementation-status.md` — slice history, results, deviations
 - `AGENTS.md` — contributor/agent conventions and commands

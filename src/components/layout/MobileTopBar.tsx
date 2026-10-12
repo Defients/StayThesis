@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Menu, RotateCcw, X } from 'lucide-react';
-import { useActingPartner, useDispatch } from '@/app/store/StoreContext';
+import { useActingPartner, useDispatch, useWorkspace } from '@/app/store/StoreContext';
 import { PARTNER_LIST } from '@/data/demo/partners';
 import { cx } from '@/lib/cx';
 import { LogoMark } from './LogoMark';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 export function MobileTopBar() {
   const { actingPartner, setActingPartner } = useActingPartner();
   const dispatch = useDispatch();
+  const { mode } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -45,7 +46,7 @@ export function MobileTopBar() {
       <div className="flex items-center gap-1.5" ref={menuRef}>
         <span
           className="flex h-7 w-7 items-center justify-center rounded-full bg-cyan text-[11px] font-bold text-[#06222b]"
-          title={`Acting as ${actingPartner.name} — simulated identity`}
+          title={`${mode === 'shared' ? 'Signed in' : 'Acting'} as ${actingPartner.name}`}
         >
           {actingPartner.initials}
         </span>
@@ -69,6 +70,7 @@ export function MobileTopBar() {
                 <button
                   key={p.id}
                   type="button"
+                  disabled={mode === 'shared'}
                   aria-pressed={p.id === actingPartner.id}
                   onClick={() => setActingPartner(p.id)}
                   className={cx(
@@ -94,10 +96,11 @@ export function MobileTopBar() {
               ))}
             </div>
             <p className="mt-2 px-1 text-[10px] text-muted">
-              Simulated identity — no authentication
+              {mode === 'shared' ? `Signed in as ${actingPartner.name}` : 'Simulated identity — no authentication'}
             </p>
             <button
               type="button"
+              hidden={mode === 'shared'}
               onClick={() => {
                 setOpen(false);
                 setConfirmReset(true);

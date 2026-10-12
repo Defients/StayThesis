@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router';
 import { RotateCcw } from 'lucide-react';
 import { NAV_ITEMS } from '@/app/nav';
-import { useActingPartner, useDispatch } from '@/app/store/StoreContext';
+import { useActingPartner, useDispatch, useWorkspace } from '@/app/store/StoreContext';
 import { PARTNER_LIST } from '@/data/demo/partners';
 import { cx } from '@/lib/cx';
 import { LogoMark } from './LogoMark';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 export function Sidebar() {
   const { actingPartner, setActingPartner } = useActingPartner();
   const dispatch = useDispatch();
+  const { mode } = useWorkspace();
   const [confirmReset, setConfirmReset] = useState(false);
 
   return (
@@ -91,6 +92,7 @@ export function Sidebar() {
               <button
                 key={p.id}
                 type="button"
+                disabled={mode === 'shared'}
                 onClick={() => setActingPartner(p.id)}
                 aria-pressed={active}
                 className={cx(
@@ -116,10 +118,11 @@ export function Sidebar() {
           })}
         </div>
         <p className="mt-2 text-[10px] leading-snug text-muted">
-          Simulated identity — no authentication
+          {mode === 'shared' ? `Signed in as ${actingPartner.name}` : 'Simulated identity — no authentication'}
         </p>
         <button
           type="button"
+          hidden={mode === 'shared'}
           onClick={() => setConfirmReset(true)}
           className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-secondary transition-colors hover:text-ink"
         >

@@ -16,6 +16,7 @@ import { Select } from '@/components/ui/Select';
 import { Stat } from '@/components/ui/Stat';
 import { StatusPill, type StatusTone } from '@/components/ui/StatusPill';
 import { cx } from '@/lib/cx';
+import { EvidenceCaptureForm } from './EvidenceCaptureForm';
 
 const CLASSIFICATIONS: EvidenceClassification[] = [
   'VERIFIED',
@@ -278,6 +279,7 @@ export function EvidenceTab({ view }: { view: PropertyView }) {
             is never auto-upgraded — VERIFIED requires human review.
           </p>
         </div>
+        <EvidenceCaptureForm propertyId={view.property.id} />
         <ul className={cx('flex flex-col gap-3')}>
           {records.map((record) => (
             <EvidenceCard

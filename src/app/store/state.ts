@@ -24,6 +24,8 @@ export interface Notice {
 
 /** Mutable demo state (spec §6). Static records live in src/data/demo. */
 export interface DemoState {
+  /** Session-only marker; never persisted in a workspace snapshot. */
+  workspaceMode?: 'shared';
   actingPartnerId: PartnerId;
   preferences: PlanningPreferences;
   scoreWeights: ScoreWeights;

@@ -3,6 +3,12 @@
 StayThesis — a local, static, $0-runtime React 19 + TypeScript (strict) app.
 Synthetic demo data only; nothing is persisted, sent, or authenticated.
 
+Phase 2 exception: an explicitly configured shared pilot uses Supabase Auth
+and private persisted mutable records. Keep the unconfigured demo offline.
+Only public configuration is compiled into the SPA; privileged credentials
+stay in the Edge runtime. Inventory remains synthetic and no outreach is sent.
+See `docs/phase-2-setup.md` for setup and the outstanding hosted checks.
+
 ## Commands
 
 ```bash
@@ -40,7 +46,9 @@ npm run screenshots         # needs the dev server running → artifacts/screens
 - **Accessibility** — axe scans run in E2E; fix the app, not the test. No
   nested interactives, labeled controls, AA contrast.
 - **No secrets, no network** — no `fetch`, no external URLs, no env files at
-  runtime.
+  runtime in the default demo. Shared-mode I/O is isolated in
+  `src/app/shared/client.ts` and `src/server/supabaseRepository.ts`; source URLs
+  are metadata only. Never expose server keys through `VITE_*` configuration.
 - **Vitest globals are off** — import `describe/it/expect` from `vitest`;
   RTL cleanup is registered in `src/tests/setup.ts`.
 - E2E specs live in `e2e/` (excluded from vitest); use `e2e/fixtures.ts`,

@@ -5,6 +5,7 @@ import {
   useActingPartner,
   useDispatch,
   useStore,
+  useWorkspace,
 } from '@/app/store/StoreContext';
 import { PARTNERS } from '@/data/demo/partners';
 import { DEFAULT_WEIGHTS } from '@/domain/scoring';
@@ -34,6 +35,7 @@ export function DecisionTab({ view }: { view: PropertyView }) {
   const dispatch = useDispatch();
   const { actingPartner } = useActingPartner();
   const weights = useStore().scoreWeights;
+  const { mode } = useWorkspace();
   const { decision, score } = view;
   const factors = score.factors;
 
@@ -195,7 +197,7 @@ export function DecisionTab({ view }: { view: PropertyView }) {
 
           <Panel title="Partner approvals">
             <p className="mb-3 text-[11px] text-muted">
-              Simulated approval — not authenticated.
+              {mode === 'shared' ? 'Only your authenticated account can decide your approval. Changes to assumptions require new approvals.' : 'Simulated approval — not authenticated.'}
             </p>
             {view.approvals.length === 0 ? (
               <p className="text-sm text-secondary">
@@ -285,7 +287,7 @@ export function DecisionTab({ view }: { view: PropertyView }) {
                               </div>
                             ) : (
                               <p className="mt-2 text-[11px] text-muted">
-                                Read-only — switch acting partner to decide.
+                                {mode === 'shared' ? 'Read-only — this partner must sign in to decide.' : 'Read-only — switch acting partner to decide.'}
                               </p>
                             )}
                           </div>
@@ -308,6 +310,7 @@ export function DecisionTab({ view }: { view: PropertyView }) {
                   <Scale className="h-4 w-4 text-muted" aria-hidden />
                   Not ready to acquire — requires the qualified stage and both
                   partner approvals on every request.
+                  {mode === 'shared' && ' Shared mode requires budget, lease, and any credit-use request to be saved and approved.'}
                 </p>
               )}
             </div>

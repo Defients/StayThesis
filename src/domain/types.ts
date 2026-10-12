@@ -587,3 +587,14 @@ export interface ActivityEvent {
   kind: ActivityKind;
   message: string;
 }
+
+/** User-entered provenance. Capture never implies verification. */
+export type EvidenceCapture = Pick<EvidenceRecord,
+  'entityId' | 'metric' | 'value' | 'units' | 'definition' | 'sourceName' |
+  'sourceUrl' | 'retrievedAt' | 'effectiveAt' | 'observationPeriod' | 'notes' | 'gateCategory'>;
+
+export interface WorkspaceMember {
+  workspaceId: string;
+  userId: string;
+  partnerId: PartnerId;
+}

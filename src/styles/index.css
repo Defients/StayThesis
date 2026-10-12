@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/space-grotesk';
+
+/* ---------------------------------------------------------------------------
+   StayThesis design tokens — dark-first "CosmoTech" command-center palette.
+   Mapped into Tailwind v4 theme so utilities like bg-surface / text-secondary /
+   border-line / bg-cyan-soft work directly.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-bg: #080d18;
+  --color-surface: #121c2d;
+  --color-elevated: #19263b;
+  --color-sunken: #0c1322;
+  --color-line: #22324a;
+  --color-line-strong: #314766;
+
+  --color-ink: #e8f0fa;
+  --color-secondary: #97a9bf;
+  --color-muted: #71849b;
+
+  --color-cyan: #31b8d2;
+  --color-violet: #9b86e8;
+  --color-positive: #3dcb91;
+  --color-warning: #e8b04b;
+  --color-critical: #f06a6a;
+
+  --color-cyan-soft: rgb(49 184 210 / 0.14);
+  --color-violet-soft: rgb(155 134 232 / 0.14);
+  --color-positive-soft: rgb(61 203 145 / 0.14);
+  --color-warning-soft: rgb(232 176 75 / 0.14);
+  --color-critical-soft: rgb(240 106 106 / 0.14);
+  --color-neutral-soft: rgb(151 169 191 / 0.12);
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Inter Variable', ui-sans-serif,
+    system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* Atmosphere: a faint cyan/violet glow bleeding in from the top edge only. */
+    background-image:
+      radial-gradient(60rem 26rem at 18% -12%, rgb(49 184 210 / 0.07), transparent 62%),
+      radial-gradient(52rem 24rem at 88% -16%, rgb(155 134 232 / 0.06), transparent 62%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  /* Keyboard-only focus ring: 2px cyan outline with offset. */
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 2px);
+  }
+
+  ::selection {
+    background: rgb(49 184 210 / 0.28);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Thin scrollbars that match the palette. */
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}

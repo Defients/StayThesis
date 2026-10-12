@@ -134,14 +134,14 @@ describe('Acquisition CRM — drawer', () => {
       }),
     ).toBeInTheDocument();
 
-    // Approval — acting partner (Alex) decides only their own slot; Sam's
+    // Approval — acting partner (Joe) decides only their own slot; Deffy's
     // slot stays read-only.
     const approveButtons = within(drawer).getAllByRole('button', {
       name: 'Approve',
     });
     expect(approveButtons.length).toBeGreaterThan(0);
     await user.click(approveButtons[0]!);
-    expect(within(drawer).getByText(/pending/i)).toBeInTheDocument(); // Sam's slot
+    expect(within(drawer).getByText(/pending/i)).toBeInTheDocument(); // Deffy's slot
     expect(
       within(drawer).getAllByRole('button', { name: 'Approve' }).length,
     ).toBe(approveButtons.length); // no buttons appear for the other partner

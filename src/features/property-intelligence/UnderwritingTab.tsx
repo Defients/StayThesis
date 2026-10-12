@@ -707,24 +707,24 @@ export function UnderwritingTab({ view }: { view: PropertyView }) {
                 </dd>
               </div>
             ))}
-            {fin.warnings.includes('promo-balance-remaining') ? (
-              <p className="mt-1 flex items-start gap-1.5 text-xs text-warning" role="status">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-                {money0(fin.balanceAtPromoExpiry)} remains when the promotional
-                period ends — post-promo interest applies from month{' '}
-                {model.financing.promoMonths + 1}.
-              </p>
-            ) : (
-              fin.creditFunded > 0 &&
-              fin.payoffMonth !== null &&
-              fin.payoffMonth > 0 &&
-              fin.payoffMonth <= model.financing.promoMonths && (
-                <p className="mt-1 text-xs text-positive">
-                  Paid off before promo expiry (month {fin.payoffMonth}).
-                </p>
-              )
-            )}
           </dl>
+          {fin.warnings.includes('promo-balance-remaining') ? (
+            <p className="mt-1 flex items-start gap-1.5 text-xs text-warning" role="status">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+              {money0(fin.balanceAtPromoExpiry)} remains when the promotional
+              period ends — post-promo interest applies from month{' '}
+              {model.financing.promoMonths + 1}.
+            </p>
+          ) : (
+            fin.creditFunded > 0 &&
+            fin.payoffMonth !== null &&
+            fin.payoffMonth > 0 &&
+            fin.payoffMonth <= model.financing.promoMonths && (
+              <p className="mt-1 text-xs text-positive">
+                Paid off before promo expiry (month {fin.payoffMonth}).
+              </p>
+            )
+          )}
         </div>
         <details className="mt-4 rounded-lg border border-line">
           <summary className="cursor-pointer px-3 py-2 text-xs font-semibold uppercase tracking-wider text-secondary">

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import {
   AlertTriangle,
@@ -38,6 +38,7 @@ import { cx } from '@/lib/cx';
 const STAGE_ORDER = STAGES.map((s) => s.id);
 const stageIndex = (s: AcquisitionStage) => STAGE_ORDER.indexOf(s);
 const NEGOTIATING_ON = stageIndex('negotiating');
+const CONTACTED_ON = stageIndex('contacted');
 const CAPITAL_STAGES = new Set<AcquisitionStage>([
   'negotiating',
   'landlord-approved',
@@ -76,69 +77,94 @@ function greeting(): string {
   return 'Good evening';
 }
 
-interface RiskAlert {
-  id: string;
-  severity: 'critical' | 'warning';
+interface AlertReason {
   text: string;
   to: string;
 }
 
-/** Derived alerts — every entry links to the tab that resolves it. */
-function deriveAlerts(views: PropertyView[]): RiskAlert[] {
-  const alerts: RiskAlert[] = [];
+interface PropertyAlert {
+  propertyId: string;
+  name: string;
+  severity: 'critical' | 'warning';
+  /** Later-stage deals surface first within a severity band. */
+  stageIndex: number;
+  reasons: AlertReason[];
+}
+
+/**
+ * Derived alerts, grouped per property. Severity: critical when the deal is
+ * active (stage ≥ contacted) or the gate status regressed post-qualification;
+ * a failed financial gate on an early-stage card is a screening signal —
+ * "consider rejecting" — rather than a fire.
+ */
+function deriveAlerts(views: PropertyView[]): PropertyAlert[] {
+  const alerts: PropertyAlert[] = [];
   for (const v of views) {
     const { property, pipeline, decision } = v;
+    if (pipeline.stage === 'rejected') continue;
+    const idx = stageIndex(pipeline.stage);
+    const active = idx >= CONTACTED_ON;
+    const reasons: AlertReason[] = [];
+    let severity: PropertyAlert['severity'] = 'warning';
+
     if (pipeline.stage === 'qualified' && !decision.canQualify) {
-      alerts.push({
-        id: `${property.id}-regression`,
-        severity: 'critical',
-        text: `${property.name}: qualified but gates regressed — review immediately`,
+      reasons.push({
+        text: 'Qualified but gates regressed — review immediately',
         to: `/property/${property.id}/compliance`,
       });
-      continue; // regression supersedes the per-gate alert below
-    }
-    if (pipeline.stage !== 'rejected') {
-      const criticalFailed = v.gates.filter(
-        (g) => g.critical && decision.failed.includes(g.category),
+      severity = 'critical';
+    } else {
+      const failedGates = v.gates.filter((g) =>
+        decision.failed.includes(g.category),
       );
-      if (criticalFailed.length > 0)
-        alerts.push({
-          id: `${property.id}-failed`,
-          severity: 'critical',
-          text: `${property.name}: ${criticalFailed.map((g) => g.label).join(', ')} failed`,
+      if (failedGates.length > 0) {
+        reasons.push({
+          text: `${failedGates.map((g) => g.label).join(', ')} failed`,
           to: `/property/${property.id}/compliance`,
         });
+        if (active) severity = 'critical';
+        else
+          reasons.push({
+            text: 'Consider rejecting at screening',
+            to: `/property/${property.id}/decision`,
+          });
+      }
       if (v.results.base.warnings.includes('promo-balance-remaining'))
-        alerts.push({
-          id: `${property.id}-promo`,
-          severity: 'warning',
-          text: `${property.name}: balance remains when the promotional APR ends`,
+        reasons.push({
+          text: 'Balance remains when the promotional APR ends',
           to: `/property/${property.id}/underwriting`,
         });
       if (
-        stageIndex(pipeline.stage) >= NEGOTIATING_ON &&
-        stageIndex(pipeline.stage) < stageIndex('rejected') &&
+        idx >= NEGOTIATING_ON &&
         v.results.conservative.annual.operatingCashFlow < 0
       )
-        alerts.push({
-          id: `${property.id}-cons`,
-          severity: 'warning',
-          text: `${property.name}: conservative case loses money — stage is ${pipeline.stage}`,
+        reasons.push({
+          text: 'Conservative case loses money — deal is past negotiating',
           to: `/property/${property.id}/underwriting`,
         });
       const stale = v.evidence.filter(
         (e) => e.historyState === 'DISPUTED' || e.historyState === 'STALE',
       );
       if (stale.length > 0)
-        alerts.push({
-          id: `${property.id}-evidence`,
-          severity: 'warning',
-          text: `${property.name}: ${stale.length} evidence record${stale.length > 1 ? 's' : ''} disputed or stale`,
+        reasons.push({
+          text: `${stale.length} evidence record${stale.length > 1 ? 's' : ''} disputed or stale`,
           to: `/property/${property.id}/evidence`,
         });
     }
+    if (reasons.length > 0)
+      alerts.push({
+        propertyId: property.id,
+        name: property.name,
+        severity,
+        stageIndex: idx,
+        reasons,
+      });
   }
-  return alerts;
+  return alerts.sort(
+    (a, b) =>
+      (a.severity === 'critical' ? 0 : 1) - (b.severity === 'critical' ? 0 : 1) ||
+      b.stageIndex - a.stageIndex,
+  );
 }
 
 function deriveNextStep(v: PropertyView): string {
@@ -174,6 +200,7 @@ export default function CommandCenterPage() {
   const dispatch = useDispatch();
   const { actingPartner } = useActingPartner();
   const views = usePropertyViews();
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
 
   const today = now().toISOString().slice(0, 10);
   const nonRejected = views.filter((v) => v.pipeline.stage !== 'rejected');
@@ -257,6 +284,9 @@ export default function CommandCenterPage() {
     (v) => v.pipeline.stage === 'qualified',
   ).length;
   const readyCount = views.filter((v) => v.readyToAcquire).length;
+  const gateEligibleCount = nonRejected.filter(
+    (v) => v.decision.canQualify,
+  ).length;
   const capitalViews = views.filter((v) => CAPITAL_STAGES.has(v.pipeline.stage));
   const capitalTotal = capitalViews.reduce(
     (s, v) => s + v.results.base.capital.totalCommittedCapital,
@@ -283,16 +313,14 @@ export default function CommandCenterPage() {
         <p className="mt-1 text-sm text-secondary">
           Find the property. Prove the thesis.
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-sunken/70 px-4 py-3">
-          <p className="min-w-0 flex-1 text-sm text-ink">
-            <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-cyan">
-              Top priority
-            </span>
-            {topPriority.text}
+        <div className="mt-4 flex flex-col gap-2 rounded-xl border border-line bg-sunken/70 px-4 py-3 sm:flex-row sm:items-center sm:gap-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan sm:shrink-0">
+            Top priority
           </p>
+          <p className="min-w-0 flex-1 text-sm text-ink">{topPriority.text}</p>
           <Link
             to={topPriority.to}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan transition-colors hover:bg-cyan/25"
+            className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-cyan/15 px-3 py-1.5 text-xs font-semibold text-cyan transition-colors hover:bg-cyan/25 sm:self-auto"
           >
             {topPriority.cta}
             <ArrowRight aria-hidden className="h-3.5 w-3.5" />
@@ -342,19 +370,25 @@ export default function CommandCenterPage() {
         </Kpi>
         <Kpi label="Qualified / ready" to="/crm">
           <KpiValue>
-            {qualifiedCount}
-            <span className="text-sm text-muted"> / {readyCount}</span>
+            {gateEligibleCount}
+            <span className="text-sm text-muted">
+              {' '}
+              / {qualifiedCount} / {readyCount}
+            </span>
           </KpiValue>
-          <p className="text-[11px] text-muted">ready to acquire</p>
+          <p className="text-[11px] text-muted">
+            gate-eligible · qualified · ready
+          </p>
         </Kpi>
         <Kpi label="Open risk alerts" to="/crm">
           <KpiValue
-            className={alerts.some((a) => a.severity === 'critical') ? 'text-critical' : 'text-warning'}
+            className={alerts.some((a) => a.severity === 'critical') ? 'text-critical' : alerts.length ? 'text-warning' : 'text-ink'}
           >
             {alerts.length}
           </KpiValue>
           <p className="text-[11px] text-muted">
-            {alerts.filter((a) => a.severity === 'critical').length} critical
+            {alerts.filter((a) => a.severity === 'critical').length} critical ·
+            properties with alerts
           </p>
         </Kpi>
       </section>
@@ -415,7 +449,7 @@ export default function CommandCenterPage() {
                     {e.propertyId ? (
                       <Link
                         to={`/property/${e.propertyId}`}
-                        className="text-cyan hover:underline"
+                        className="text-cyan underline decoration-cyan/50 underline-offset-2 hover:decoration-cyan"
                       >
                         {propertyById(e.propertyId)?.name ?? e.propertyId}
                       </Link>
@@ -495,28 +529,66 @@ export default function CommandCenterPage() {
               No open alerts — gates, financing and evidence are all clean.
             </p>
           ) : (
-            <ul className="space-y-2">
-              {alerts.map((a) => (
-                <li key={a.id}>
-                  <Link
-                    to={a.to}
+            <>
+              <ul className="space-y-2">
+                {(showAllAlerts ? alerts : alerts.slice(0, 5)).map((a) => (
+                  <li
+                    key={a.propertyId}
                     className={cx(
-                      'flex items-start gap-2.5 rounded-lg border px-3 py-2.5 text-sm transition-colors',
+                      'rounded-lg border px-3 py-2.5',
                       a.severity === 'critical'
-                        ? 'border-critical/40 bg-critical/10 text-critical hover:bg-critical/15'
-                        : 'border-warning/40 bg-warning/10 text-warning hover:bg-warning/15',
+                        ? 'border-critical/40 bg-critical/10'
+                        : 'border-warning/40 bg-warning/10',
                     )}
                   >
-                    {a.severity === 'critical' ? (
-                      <ShieldAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
-                    ) : (
-                      <AlertTriangle aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
-                    )}
-                    {a.text}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                    <p
+                      className={cx(
+                        'flex items-center gap-2 text-sm font-medium',
+                        a.severity === 'critical'
+                          ? 'text-critical'
+                          : 'text-warning',
+                      )}
+                    >
+                      {a.severity === 'critical' ? (
+                        <ShieldAlert
+                          aria-hidden
+                          className="h-4 w-4 shrink-0"
+                        />
+                      ) : (
+                        <AlertTriangle
+                          aria-hidden
+                          className="h-4 w-4 shrink-0"
+                        />
+                      )}
+                      {a.name}
+                    </p>
+                    <ul className="mt-1 space-y-0.5 pl-6">
+                      {a.reasons.map((r) => (
+                        <li key={r.text}>
+                          <Link
+                            to={r.to}
+                            className="text-xs text-secondary underline decoration-line-strong underline-offset-2 hover:text-ink"
+                          >
+                            {r.text} →
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+              {alerts.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllAlerts((s) => !s)}
+                  className="mt-2 text-xs font-medium text-cyan hover:underline"
+                >
+                  {showAllAlerts
+                    ? 'Show fewer'
+                    : `Show all (${alerts.length})`}
+                </button>
+              )}
+            </>
           )}
         </Panel>
 
@@ -589,7 +661,15 @@ export default function CommandCenterPage() {
                   },
                   { label: 'Operating reserve', value: c.operatingReserve, cls: 'bg-cyan/80' },
                 ];
-                const total = Math.max(c.totalCommittedCapital, 1);
+                // Each bar is scaled so the max-startup-exposure marker can sit
+                // on it; the reserve segment may extend past the marker.
+                const scale = Math.max(
+                  c.totalCommittedCapital,
+                  store.preferences.maxStartupExposure,
+                  1,
+                );
+                const markerPct =
+                  (store.preferences.maxStartupExposure / scale) * 100;
                 return (
                   <Link
                     key={v.property.id}
@@ -601,18 +681,29 @@ export default function CommandCenterPage() {
                         {v.property.name}
                       </span>
                       <span className="tabular-nums text-ink">
-                        {formatCurrency(c.totalCommittedCapital)}
+                        {formatCurrency(c.startupCashRequirement)}
+                        <span className="ml-1 text-[10px] text-muted">
+                          +{formatCurrency(c.operatingReserve)} reserve
+                        </span>
                       </span>
                     </div>
-                    <div className="mt-1 flex h-3 overflow-hidden rounded-full bg-elevated">
-                      {segments.map((s) => (
-                        <span
-                          key={s.label}
-                          title={`${s.label}: ${formatCurrency(s.value)}`}
-                          className={cx('h-full', s.cls)}
-                          style={{ width: `${(s.value / total) * 100}%` }}
-                        />
-                      ))}
+                    <div className="relative mt-1">
+                      <div className="flex h-3 overflow-hidden rounded-full bg-elevated">
+                        {segments.map((s) => (
+                          <span
+                            key={s.label}
+                            title={`${s.label}: ${formatCurrency(s.value)}`}
+                            className={cx('h-full', s.cls)}
+                            style={{ width: `${(s.value / scale) * 100}%` }}
+                          />
+                        ))}
+                      </div>
+                      <span
+                        aria-hidden
+                        title={`Max startup exposure ${formatCurrency(store.preferences.maxStartupExposure)}`}
+                        className="absolute inset-y-[-3px] w-0.5 rounded bg-ink"
+                        style={{ left: `${markerPct}%` }}
+                      />
                     </div>
                   </Link>
                 );
@@ -624,11 +715,15 @@ export default function CommandCenterPage() {
                 <span className="font-display font-semibold tabular-nums text-ink">
                   {formatCurrency(capitalTotal)}
                   <span className="ml-2 text-xs font-normal text-muted">
-                    vs {formatCurrency(store.preferences.maxStartupExposure)} max
-                    exposure
+                    combined modeled capital if all proceeded
                   </span>
                 </span>
               </div>
+              <p className="text-[10px] text-muted">
+                Marker — max startup exposure{' '}
+                {formatCurrency(store.preferences.maxStartupExposure)} per deal
+                (planning preference).
+              </p>
               <div className="flex gap-4 text-[10px] text-muted">
                 <span className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-sm bg-critical/70" />
@@ -761,7 +856,7 @@ function TaskRow({
             {' · '}
             <Link
               to={`/property/${property.id}`}
-              className="text-cyan hover:underline"
+              className="text-cyan underline decoration-cyan/50 underline-offset-2 hover:decoration-cyan"
             >
               {property.name}
             </Link>

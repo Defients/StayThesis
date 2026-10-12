@@ -259,7 +259,7 @@ describe('approvals', () => {
     const appr2 = s.approvals.find((a) => a.id === 'appr-001')!;
     expect(appr2.decisions['partner-b']).toBe('DECLINED');
     expect(appr2.decisions['partner-a']).toBe('APPROVED');
-    expect(s.activity[0]!.message).toMatch(/Sam Rivera declined/);
+    expect(s.activity[0]!.message).toMatch(/Deffy declined/);
   });
 
   it('REQUEST_APPROVAL creates a dual-pending request by the acting partner', () => {
@@ -288,7 +288,7 @@ describe('approvals', () => {
     );
     expect(s.activity[0]!.kind).toBe('approval');
     expect(s.activity[0]!.message).toMatch(
-      /Alex Morgan requested approval — "Commit to 12-month lease"/,
+      /Joe requested approval — "Commit to 12-month lease"/,
     );
 
     // Explicit amount is respected; blank titles are ignored.
@@ -317,7 +317,7 @@ describe('approvals', () => {
       id: 'appr-001',
       decision: 'APPROVED',
     });
-    expect(s.activity[0]!.message).toMatch(/Sam Rivera approved/);
+    expect(s.activity[0]!.message).toMatch(/Deffy approved/);
     expect(s.activity[0]!.message).not.toMatch(/approvedd/i);
   });
 });

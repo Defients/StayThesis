@@ -48,8 +48,8 @@ describe('generateOutreachDraft', () => {
   const market = { city: 'Columbus', stateCode: 'OH' } as Market;
   const partner = {
     id: 'partner-b',
-    name: 'Sam Rivera',
-    initials: 'SR',
+    name: 'Deffy',
+    initials: 'DE',
     focus: 'Markets & landlord relations',
   } as const;
 

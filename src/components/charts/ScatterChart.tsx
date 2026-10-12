@@ -118,7 +118,7 @@ export function ScatterChart({
       <svg
         width={W}
         height={H}
-        role="img"
+        role="group"
         aria-labelledby={titleId}
         className="block max-w-full"
       >

@@ -4,14 +4,14 @@ import type { Partner, PartnerId } from '@/domain/types';
 export const PARTNERS: Record<PartnerId, Partner> = {
   'partner-a': {
     id: 'partner-a',
-    name: 'Alex Morgan',
-    initials: 'AM',
+    name: 'Joe',
+    initials: 'JO',
     focus: 'Underwriting & finance',
   },
   'partner-b': {
     id: 'partner-b',
-    name: 'Sam Rivera',
-    initials: 'SR',
+    name: 'Deffy',
+    initials: 'DE',
     focus: 'Markets & landlord relations',
   },
 };

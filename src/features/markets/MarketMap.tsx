@@ -36,7 +36,7 @@ export function MarketMap({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
-        role="img"
+        role="group"
         aria-labelledby={titleId}
         className="block rounded-xl border border-line bg-sunken/50"
       >

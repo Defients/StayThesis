@@ -26,7 +26,7 @@ describe('Command Center', () => {
   it('renders seed KPIs and the derived top priority', () => {
     renderAt();
     expect(
-      screen.getByRole('heading', { name: /good (morning|afternoon|evening),? alex/i }),
+      screen.getByRole('heading', { name: /good (morning|afternoon|evening),? joe/i }),
     ).toBeInTheDocument();
     // Seed: 5 active markets, 2 watchlist.
     expect(screen.getByText(/5 active · 2 watchlist/i)).toBeInTheDocument();
@@ -37,9 +37,9 @@ describe('Command Center', () => {
       name: /pipeline candidates/i,
     });
     expect(within(pipeline).getByText('13')).toBeInTheDocument();
-    // Top priority: finalist is gate-clean with Sam's approval pending.
+    // Top priority: finalist is gate-clean with Deffy's approval pending.
     expect(
-      screen.getByText(/meets every gate — awaiting sam's approval/i),
+      screen.getByText(/meets every gate — awaiting deffy's approval/i),
     ).toBeInTheDocument();
   });
 
@@ -61,7 +61,7 @@ describe('Command Center', () => {
     const user = userEvent.setup();
     renderAt();
     const alert = screen.getByRole('link', {
-      name: /uptown brick flat.*hoa/i,
+      name: /hoa \/ building restrictions failed/i,
     });
     await user.click(alert);
     // Lands on the property's compliance tab.

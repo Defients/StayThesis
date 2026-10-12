@@ -36,8 +36,7 @@ export function CrmCard({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
+      role="group"
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData(DRAG_MIME, property.id);
@@ -45,15 +44,9 @@ export function CrmCard({
         e.dataTransfer.effectAllowed = 'move';
       }}
       onClick={() => onOpen(property.id)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onOpen(property.id);
-        }
-      }}
       className={cx(
         'group cursor-grab rounded-xl border border-line bg-surface p-3 shadow-card',
-        'transition-colors hover:border-line-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan',
+        'transition-colors hover:border-line-strong',
         'active:cursor-grabbing',
       )}
       aria-label={`${property.name} — ${market?.city ?? ''}, stage ${pipeline.stage}`}
@@ -63,9 +56,16 @@ export function CrmCard({
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">
             {property.code}
           </p>
-          <p className="truncate text-sm font-semibold text-ink">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(property.id);
+            }}
+            className="block w-full truncate text-left text-sm font-semibold text-ink hover:text-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan"
+          >
             {property.name}
-          </p>
+          </button>
           <p className="text-xs text-secondary">
             {market?.city ?? '—'} · {formatCurrency(property.monthlyRent)}/mo
           </p>

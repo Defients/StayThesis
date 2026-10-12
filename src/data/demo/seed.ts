@@ -511,7 +511,7 @@ export function buildChecklistSeed(): ChecklistItem[] {
 
 export function buildTaskSeed(): Task[] {
   const seed: [PropertyId | null, string, 'partner-a' | 'partner-b', string, boolean][] = [
-    ['st-finalist', 'Send lease-commitment approval to Sam for sign-off', 'partner-a', '2026-10-13', false],
+    ['st-finalist', 'Send lease-commitment approval to Deffy for sign-off', 'partner-a', '2026-10-13', false],
     ['st-finalist', 'Re-run underwriting with signed-rent figure', 'partner-a', '2026-10-14', false],
     ['st-consent-cbus', 'Send follow-up with sublet clause draft', 'partner-b', '2026-10-12', false],
     ['st-consent-dayton', 'Call owner re: furnished-stay authorization', 'partner-b', '2026-10-15', false],

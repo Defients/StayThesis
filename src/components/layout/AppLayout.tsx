@@ -12,6 +12,12 @@ export function AppLayout() {
     <div className="min-h-dvh lg:flex">
       <a
         href="#main-content"
+        onClick={(e) => {
+          // HashRouter would parse "#main-content" as a route — move focus
+          // programmatically instead of navigating the fragment.
+          e.preventDefault();
+          document.getElementById('main-content')?.focus();
+        }}
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-cyan focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#06222b]"
       >
         Skip to content

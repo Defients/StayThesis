@@ -185,11 +185,7 @@ export default function CrmPage() {
       </div>
 
       {/* Board ------------------------------------------------------------- */}
-      <div
-        className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-thin px-1 pb-2 lg:snap-none"
-        role="list"
-        aria-label="Acquisition pipeline stages"
-      >
+      <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-thin px-1 pb-2 lg:snap-none">
         {STAGES.filter((s) => !hideRejected || s.id !== 'rejected').map((s) => {
           const cards = byStage.get(s.id) ?? [];
           return (
@@ -285,7 +281,7 @@ export default function CrmPage() {
                     <p className="text-xs text-muted">
                       <Link
                         to={`/crm?property=${a.propertyId}`}
-                        className="text-cyan hover:underline"
+                        className="text-cyan underline decoration-cyan/50 underline-offset-2 hover:decoration-cyan"
                       >
                         {property?.name ?? a.propertyId}
                       </Link>{' '}

@@ -152,7 +152,7 @@ describe('Property Intelligence — evidence', () => {
     await user.click(button);
 
     expect(
-      within(card).getByText(/reviewed by alex morgan/i),
+      within(card).getByText(/reviewed by joe/i),
     ).toBeInTheDocument();
     expect(within(card).getByText(/marked reviewed/i)).toBeInTheDocument();
     expect((classSelect as HTMLSelectElement).value).toBe(before);

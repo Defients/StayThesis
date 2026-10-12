@@ -5,9 +5,11 @@ export interface PanelProps
   extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   title?: ReactNode;
   actions?: ReactNode;
+  /** Remove body padding for flush content (tables, full-bleed charts). */
+  flush?: boolean;
 }
 
-export function Panel({ title, actions, className, children, ...rest }: PanelProps) {
+export function Panel({ title, actions, flush, className, children, ...rest }: PanelProps) {
   return (
     <section
       className={cx('rounded-xl border border-line bg-surface', className)}
@@ -21,7 +23,7 @@ export function Panel({ title, actions, className, children, ...rest }: PanelPro
           {actions}
         </header>
       )}
-      <div className="p-5">{children}</div>
+      <div className={flush ? undefined : 'p-5'}>{children}</div>
     </section>
   );
 }

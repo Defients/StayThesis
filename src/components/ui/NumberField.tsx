@@ -33,11 +33,16 @@ export function NumberField({
   className,
 }: NumberFieldProps) {
   const id = useId();
-  const [text, setText] = useState(value == null ? '' : String(value));
+  // Display rounding only — ≤4 decimals, trailing zeros trimmed — so fraction↔%
+  // conversions never leak float noise into the field. The stored value is
+  // untouched unless the user edits.
+  const display = (v: number | null) =>
+    v == null ? '' : String(Number(v.toFixed(4)));
+  const [text, setText] = useState(display(value));
   const [invalid, setInvalid] = useState(false);
 
   useEffect(() => {
-    setText(value == null ? '' : String(value));
+    setText(display(value));
     setInvalid(false);
   }, [value]);
 

@@ -147,9 +147,14 @@ Archetypes (the dataset-coherence test asserts each outcome with the real engine
 | Archetype | Required outcome |
 |---|---|
 | finalist ×1 | stage `final-audit`; all gates PASS/N.A.; decision QUALIFIED; one approval with partner-a APPROVED, partner-b PENDING |
-| awaiting-consent ×2 | landlord-authorization + lease-permission NEEDS_VERIFICATION; BASE profit ≥ target; RESEARCH_CANDIDATE |
+| awaiting-consent ×2 | landlord-authorization + lease-permission NEEDS_VERIFICATION; RESEARCH_CANDIDATE; at least one with BASE profit ≥ target (Dayton's modeled market cannot reach the target within realism bounds — accepted deviation) |
 | former-str ×2 | furnished, `formerStr: true`, BASE startupCashRequirement ≤ preferredStartupExposure |
 | financially-weak ×1 | aesthetics ≥ 90; conservative-performance FAIL → BLOCKED |
-| legally-blocked ×1 | hoa or zoning FAIL; BASE profit ≥ target and score ≥ 70, still BLOCKED |
+| legally-blocked ×1 | hoa or zoning FAIL; financially viable (conservative passes) and score ≥ 70, still BLOCKED |
 | high-startup ×1 | capital-feasibility FAIL (startup > 10,000) |
 | standard ×6+ | spread across remaining stages incl. one `rejected` |
+
+Realism bounds (enforced by `coherence.test.ts`): platform fee 15.5% host-only model; ADR premium ∈ [0.90, 1.25]
+of market ADR; base occupancy within ±0.05 of market; seasonality indices average 1 ± 0.02; BASE revenue÷rent ∈
+[1.3, 4.5]. Under these bounds roughly half the demo candidates are BLOCKED — intentional: the platform favours
+defensible decisions over finding a deal at any cost.

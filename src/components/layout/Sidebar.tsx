@@ -1,23 +1,30 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router';
 import { RotateCcw } from 'lucide-react';
 import { NAV_ITEMS } from '@/app/nav';
-import { useApp } from '@/app/providers';
+import { useActingPartner, useDispatch } from '@/app/store/StoreContext';
 import { PARTNER_LIST } from '@/data/demo/partners';
 import { cx } from '@/lib/cx';
 import { LogoMark } from './LogoMark';
+import { Dialog } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
 
 /** Persistent desktop sidebar (lg+), ~248px. */
 export function Sidebar() {
-  const { actingPartner, setActingPartner, resetDemo } = useApp();
+  const { actingPartner, setActingPartner } = useActingPartner();
+  const dispatch = useDispatch();
+  const [confirmReset, setConfirmReset] = useState(false);
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-62 flex-col bg-sunken/70 lg:flex">
-      {/* Gradient hairline along the sidebar's inner edge. */}
+    // The outer column stretches with document height so the rail background
+    // and hairline reach the bottom of long pages; the inner aside is the
+    // sticky, viewport-high, independently scrolling region.
+    <div className="relative z-40 hidden w-62 shrink-0 bg-sunken/70 lg:block">
       <div
         aria-hidden
         className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-cyan/35 via-line to-violet/30"
       />
-
+      <aside className="sticky top-0 flex h-dvh flex-col overflow-y-auto scroll-thin">
       <div className="flex items-start gap-3 px-5 pb-6 pt-6">
         <LogoMark className="mt-0.5 h-8 w-8 shrink-0" />
         <div>
@@ -113,13 +120,39 @@ export function Sidebar() {
         </p>
         <button
           type="button"
-          onClick={resetDemo}
+          onClick={() => setConfirmReset(true)}
           className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-secondary transition-colors hover:text-ink"
         >
           <RotateCcw className="h-3.5 w-3.5" aria-hidden />
           Reset demo
         </button>
       </div>
-    </aside>
+
+      <Dialog
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        title="Reset demo workspace?"
+      >
+        <p>
+          Restores the seed dataset: stages, gates, underwriting edits, notes,
+          approvals, and compare selections all revert. This cannot be undone.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setConfirmReset(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              dispatch({ type: 'RESET_DEMO' });
+              setConfirmReset(false);
+            }}
+          >
+            Reset demo
+          </Button>
+        </div>
+      </Dialog>
+      </aside>
+    </div>
   );
 }

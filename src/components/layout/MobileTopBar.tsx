@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Menu, RotateCcw, X } from 'lucide-react';
-import { useApp } from '@/app/providers';
+import { useActingPartner, useDispatch } from '@/app/store/StoreContext';
 import { PARTNER_LIST } from '@/data/demo/partners';
 import { cx } from '@/lib/cx';
 import { LogoMark } from './LogoMark';
+import { Dialog } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/Button';
 
 /** Compact top bar below lg: wordmark, acting partner, menu. */
 export function MobileTopBar() {
-  const { actingPartner, setActingPartner, resetDemo } = useApp();
+  const { actingPartner, setActingPartner } = useActingPartner();
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,8 +99,8 @@ export function MobileTopBar() {
             <button
               type="button"
               onClick={() => {
-                resetDemo();
                 setOpen(false);
+                setConfirmReset(true);
               }}
               className="mt-3 inline-flex items-center gap-1.5 px-1 text-xs font-medium text-secondary transition-colors hover:text-ink"
             >
@@ -106,6 +110,31 @@ export function MobileTopBar() {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        title="Reset demo workspace?"
+      >
+        <p>
+          Restores the seed dataset: stages, gates, underwriting edits, notes,
+          approvals, and compare selections all revert. This cannot be undone.
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setConfirmReset(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              dispatch({ type: 'RESET_DEMO' });
+              setConfirmReset(false);
+            }}
+          >
+            Reset demo
+          </Button>
+        </div>
+      </Dialog>
     </header>
   );
 }

@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import { HashRouter, Route, Routes } from 'react-router';
-import { AppProvider } from './providers';
+import { StoreProvider } from './store/StoreContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -10,6 +10,9 @@ const CommandCenterPage = lazy(
 const MarketsPage = lazy(() => import('@/features/markets/MarketsPage'));
 const PropertiesPage = lazy(
   () => import('@/features/properties/PropertiesPage'),
+);
+const ComparePage = lazy(
+  () => import('@/features/properties/ComparePage'),
 );
 const PropertyIntelligencePage = lazy(
   () => import('@/features/property-intelligence/PropertyIntelligencePage'),
@@ -22,13 +25,14 @@ const CrmPage = lazy(() => import('@/features/crm/CrmPage'));
  */
 export default function App() {
   return (
-    <AppProvider>
+    <StoreProvider>
       <HashRouter>
         <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<CommandCenterPage />} />
             <Route path="markets" element={<MarketsPage />} />
             <Route path="properties" element={<PropertiesPage />} />
+            <Route path="properties/compare" element={<ComparePage />} />
             <Route path="property" element={<PropertyIntelligencePage />} />
             <Route
               path="property/:propertyId/:tab?"
@@ -39,6 +43,6 @@ export default function App() {
           </Route>
         </Routes>
       </HashRouter>
-    </AppProvider>
+    </StoreProvider>
   );
 }

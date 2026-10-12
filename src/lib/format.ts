@@ -13,12 +13,15 @@ export function formatCurrency(
   decimals: 0 | 2 = 0,
 ): string {
   if (!isUsable(value)) return UNAVAILABLE;
-  return new Intl.NumberFormat('en-US', {
+  // Format the absolute value and prepend a true minus sign so negatives read
+  // "−$500" rather than a locale-variant like "($500)" or "$-500".
+  const formatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  }).format(value);
+  }).format(Math.abs(value));
+  return value < 0 ? `−${formatted}` : formatted;
 }
 
 export function formatCompactCurrency(value: number | null | undefined): string {
